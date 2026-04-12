@@ -1,22 +1,33 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
+
 plugins {
-    kotlin("jvm") version "2.3.10"
+    base
+    alias(libs.plugins.kotlin.jvm) apply false
 }
 
-group = "net.azisaba"
+group = "net.azisaba.datadriven"
 version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
-}
+configure(subprojects.filter { it.childProjects.isEmpty() }) {
+    group = rootProject.group
+    version = rootProject.version
 
-dependencies {
-    testImplementation(kotlin("test"))
-}
+    apply(plugin = "java-library")
+    apply(plugin = "org.jetbrains.kotlin.jvm")
 
-kotlin {
-    jvmToolchain(25)
-}
+    repositories {
+        mavenCentral()
+    }
 
-tasks.test {
-    useJUnitPlatform()
+    dependencies {
+        add("testImplementation", kotlin("test"))
+    }
+
+    configure<KotlinJvmProjectExtension> {
+        jvmToolchain(21)
+    }
+
+    configure<JavaPluginExtension> {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
