@@ -1,4 +1,4 @@
-package net.azisaba.datadriven
+package net.azisaba.datadriven.contents
 
 interface Contents<T : Any> {
     fun byKey(key: ContentKey<T>): T?

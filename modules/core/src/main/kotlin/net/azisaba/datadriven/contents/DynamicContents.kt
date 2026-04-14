@@ -1,4 +1,4 @@
-package net.azisaba.datadriven
+package net.azisaba.datadriven.contents
 
 import com.charleskorn.kaml.PolymorphismStyle
 import com.charleskorn.kaml.Yaml
@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.collections.iterator
 import kotlin.io.path.*
 
 abstract class DynamicContents<T : Any>(

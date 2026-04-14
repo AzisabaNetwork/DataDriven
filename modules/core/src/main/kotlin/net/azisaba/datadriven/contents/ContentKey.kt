@@ -1,4 +1,4 @@
-package net.azisaba.datadriven
+package net.azisaba.datadriven.contents
 
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.KeyPattern
