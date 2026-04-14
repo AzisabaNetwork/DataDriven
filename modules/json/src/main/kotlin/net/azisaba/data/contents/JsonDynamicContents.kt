@@ -1,4 +1,4 @@
-package net.azisaba.datadriven.contents
+package net.azisaba.data.contents
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json

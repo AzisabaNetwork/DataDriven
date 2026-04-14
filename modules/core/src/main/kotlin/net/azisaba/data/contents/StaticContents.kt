@@ -1,4 +1,4 @@
-package net.azisaba.datadriven.contents
+package net.azisaba.data.contents
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap

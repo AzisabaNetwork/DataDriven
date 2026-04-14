@@ -1,4 +1,4 @@
-package net.azisaba.datadriven.contents
+package net.azisaba.data.contents
 
 import com.charleskorn.kaml.PolymorphismStyle
 import com.charleskorn.kaml.Yaml

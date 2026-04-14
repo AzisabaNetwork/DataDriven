@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm) apply false
 }
 
-group = "net.azisaba.datadriven"
+group = "net.azisaba.data"
 version = "1.0-SNAPSHOT"
 
 configure(subprojects.filter { it.childProjects.isEmpty() }) {

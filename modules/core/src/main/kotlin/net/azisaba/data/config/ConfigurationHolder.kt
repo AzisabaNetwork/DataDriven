@@ -1,4 +1,4 @@
-package net.azisaba.datadriven.config
+package net.azisaba.data.config
 
 fun interface ConfigurationHolder<T> {
     fun config(): T

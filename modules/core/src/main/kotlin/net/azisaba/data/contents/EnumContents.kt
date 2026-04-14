@@ -1,4 +1,4 @@
-package net.azisaba.datadriven.contents
+package net.azisaba.data.contents
 
 import net.kyori.adventure.key.Keyed
 import kotlin.reflect.KClass
