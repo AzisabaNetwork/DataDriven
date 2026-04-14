@@ -10,7 +10,7 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class FileConfigurationHolder<T : Any>(
+open class FileConfigurationHolder<T : Any>(
     val serializer: KSerializer<T>, val stringFormat: StringFormat,
 ) : ConfigurationHolder<T> {
     private val config: AtomicReference<T?> = AtomicReference(null)

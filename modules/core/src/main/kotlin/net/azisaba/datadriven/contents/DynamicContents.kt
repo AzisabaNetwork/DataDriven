@@ -1,25 +1,18 @@
 package net.azisaba.datadriven.contents
 
-import com.charleskorn.kaml.PolymorphismStyle
-import com.charleskorn.kaml.Yaml
-import com.charleskorn.kaml.YamlConfiguration
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
-import kotlinx.serialization.json.Json
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
-import kotlin.collections.iterator
 import kotlin.io.path.*
 
 abstract class DynamicContents<T : Any>(
     val name: String,
-    private val lazySerializer: Lazy<KSerializer<T>>,
-    fileExtensions: Set<String>,
+    private val fileExtensions: Set<String>,
+    private val serializer: Lazy<KSerializer<T>>,
     private val stringFormat: StringFormat,
 ) : Contents<T> {
-    private val fileExtensions: Set<String> = fileExtensions.map(String::lowercase).toSet()
-
     private val cacheData: AtomicReference<CacheData<T>?> = AtomicReference(null)
 
     override fun byKey(key: ContentKey<T>): T? = requireLoaded().byKey[key]
@@ -100,7 +93,7 @@ abstract class DynamicContents<T : Any>(
         }
 
         return try {
-            stringFormat.decodeFromString(lazySerializer.value, text)
+            stringFormat.decodeFromString(serializer.value, text)
         } catch (e: Exception) {
             throw IllegalArgumentException("Failed to parse ${stringFormat::class.simpleName} file: $this\n$text", e)
         }
@@ -116,25 +109,3 @@ abstract class DynamicContents<T : Any>(
         val byValue: Map<T, ContentKey<T>>,
     )
 }
-
-abstract class DynamicJsonContents<T : Any>(name: String, lazySerializer: Lazy<KSerializer<T>>) : DynamicContents<T>(
-    name,
-    lazySerializer,
-    fileExtensions = setOf("json"),
-    stringFormat = Json {
-        classDiscriminator = "Kind"
-        ignoreUnknownKeys = true
-    },
-)
-
-abstract class DynamicYamlContents<T : Any>(name: String, lazySerializer: Lazy<KSerializer<T>>) : DynamicContents<T>(
-    name,
-    lazySerializer,
-    fileExtensions = setOf("yml", "yaml"),
-    stringFormat = Yaml(
-        configuration = YamlConfiguration(
-            polymorphismStyle = PolymorphismStyle.Property,
-            polymorphismPropertyName = "Kind",
-        )
-    ),
-)
