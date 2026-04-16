@@ -13,6 +13,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 [libraries]
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+minecraft-serialization-adventure = { module = "net.azisaba.serialization:adventure", version.ref = "minecraft-serialization" }
 minecraft-serialization-paper = { module = "net.azisaba.serialization:paper", version.ref = "minecraft-serialization" }
 kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }

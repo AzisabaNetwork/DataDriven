@@ -20,6 +20,7 @@ configure(leafProjects) {
 
     repositories {
         mavenCentral()
+        maven { url = uri("https://repo.azisaba.net/repository/maven-snapshots/") }
     }
 
     dependencies {

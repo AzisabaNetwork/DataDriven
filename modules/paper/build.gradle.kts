@@ -3,7 +3,6 @@ plugins {
 }
 
 repositories {
-    maven { url = uri("https://repo.azisaba.net/repository/maven-snapshots/") }
     maven { url = uri("https://repo.papermc.io/repository/maven-public/") }
 }
 
