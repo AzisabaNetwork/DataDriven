@@ -6,4 +6,5 @@ rootProject.name = "data-driven"
 
 include(":modules:core")
 include(":modules:json")
+include(":modules:paper")
 include(":modules:yaml")
