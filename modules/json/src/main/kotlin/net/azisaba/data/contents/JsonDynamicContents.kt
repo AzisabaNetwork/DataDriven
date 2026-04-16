@@ -8,7 +8,7 @@ abstract class JsonDynamicContents<T : Any>(name: String, serializer: Lazy<KSeri
     fileExtensions = setOf("json"),
     serializer,
     stringFormat = Json {
-        classDiscriminator = "Kind"
+        classDiscriminator = "kind"
         ignoreUnknownKeys = true
     },
 )

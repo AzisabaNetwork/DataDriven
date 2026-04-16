@@ -10,7 +10,7 @@ class YamlFileConfigurationHolder<T : Any>(serializer: KSerializer<T>) : FileCon
     stringFormat = Yaml(
         configuration = YamlConfiguration(
             polymorphismStyle = PolymorphismStyle.Property,
-            polymorphismPropertyName = "Kind",
+            polymorphismPropertyName = "kind",
         ),
     ),
 )

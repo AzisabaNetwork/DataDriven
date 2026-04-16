@@ -6,7 +6,7 @@ import kotlinx.serialization.json.Json
 class JsonFileConfigurationHolder<T : Any>(serializer: KSerializer<T>) : FileConfigurationHolder<T>(
     serializer,
     stringFormat = Json {
-        classDiscriminator = "Kind"
+        classDiscriminator = "kind"
         ignoreUnknownKeys = true
     },
 )

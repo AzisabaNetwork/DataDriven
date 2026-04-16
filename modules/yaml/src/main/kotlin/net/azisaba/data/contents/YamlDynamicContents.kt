@@ -12,7 +12,7 @@ abstract class YamlDynamicContents<T : Any>(name: String, serializer: Lazy<KSeri
     stringFormat = Yaml(
         configuration = YamlConfiguration(
             polymorphismStyle = PolymorphismStyle.Property,
-            polymorphismPropertyName = "Kind",
+            polymorphismPropertyName = "kind",
         )
     ),
 )
