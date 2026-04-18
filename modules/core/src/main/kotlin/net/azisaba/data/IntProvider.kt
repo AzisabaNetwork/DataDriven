@@ -9,7 +9,9 @@ import kotlin.math.sqrt
 import kotlin.random.Random
 
 @Serializable
-sealed interface IntProvider : NumberProvider<Int> {
+sealed interface IntProvider {
+    fun sample(random: Random = Random.Default): Int
+
     @Serializable
     @SerialName("Constant")
     data class Constant(val value: Int) : IntProvider {
