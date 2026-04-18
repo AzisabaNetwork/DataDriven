@@ -48,7 +48,12 @@ abstract class DynamicContents<T : Any>(
             byValue[value] = key
         }
 
-        cacheData.set(CacheData(byKey, byValue))
+        cacheData.set(CacheData(root, byKey, byValue))
+    }
+
+    fun reload() {
+        val (root) = requireLoaded()
+        bootstrap(root)
     }
 
     private fun requireLoaded(): CacheData<T> =
@@ -105,6 +110,7 @@ abstract class DynamicContents<T : Any>(
     }
 
     private data class CacheData<T : Any>(
+        val root: Path,
         val byKey: Map<ContentKey<T>, T>,
         val byValue: Map<T, ContentKey<T>>,
     )
