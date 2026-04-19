@@ -5,7 +5,6 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 import kotlin.time.measureTime
 
 fun <T : Any> DynamicContents<T>.toReloadCommand(literal: String): LiteralCommandNode<CommandSourceStack> =
@@ -15,10 +14,12 @@ fun <T : Any> DynamicContents<T>.toReloadCommand(literal: String): LiteralComman
 
             source.sender.sendMessage(
                 Component.text()
-                    .color(NamedTextColor.GRAY)
-                    .append(Component.text("Reloading "))
-                    .append(Component.text(name, NamedTextColor.AQUA))
-                    .append(Component.text("..."))
+                    .color(CommandColors.BASE)
+                    .append(Component.text("ℹ", CommandColors.HIGHLIGHT))
+                    .appendSpace()
+                    .append(Component.text("Reloading '"))
+                    .append(Component.text(name, CommandColors.HIGHLIGHT))
+                    .append(Component.text("'..."))
                     .build()
             )
 
@@ -29,15 +30,25 @@ fun <T : Any> DynamicContents<T>.toReloadCommand(literal: String): LiteralComman
 
                 source.sender.sendMessage(
                     Component.text()
-                        .color(NamedTextColor.GREEN)
-                        .append(Component.text("Reloaded "))
-                        .append(Component.text(name, NamedTextColor.AQUA))
-                        .append(Component.text(" successfully"))
+                        .color(CommandColors.INFO)
+                        .append(Component.text("Reloaded '"))
+                        .append(Component.text(name, CommandColors.HIGHLIGHT))
+                        .append(Component.text("' successfully"))
+                        .appendNewline()
                         .append(
-                            Component.text(
-                                "($count entr${if (count == 1) "y" else "ies"} in ${millis}ms)",
-                                NamedTextColor.GRAY,
-                            )
+                            Component.text()
+                                .color(CommandColors.BASE)
+                                .append(Component.text("("))
+                                .appendSpace()
+                                .append(Component.text(count, CommandColors.INFO))
+                                .appendSpace()
+                                .append(Component.text("entr${if (count == 1) "y" else "ies"} in"))
+                                .appendSpace()
+                                .append(Component.text(millis, CommandColors.INFO))
+                                .append(Component.text("ms"))
+                                .appendSpace()
+                                .append(Component.text(")"))
+                                .build()
                         )
                         .build()
                 )
@@ -45,11 +56,11 @@ fun <T : Any> DynamicContents<T>.toReloadCommand(literal: String): LiteralComman
             } catch (e: Exception) {
                 source.sender.sendMessage(
                     Component.text()
-                        .append(Component.text("Reload failed: ", NamedTextColor.RED))
+                        .append(Component.text("Reload failed: ", CommandColors.ERROR))
                         .append(
                             Component.text(
                                 e.message ?: e::class.simpleName ?: "Unknown error",
-                                NamedTextColor.GRAY,
+                                CommandColors.WARN,
                             )
                         )
                         .build()
