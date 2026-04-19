@@ -7,6 +7,7 @@ import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
 
 fun <T : Any> Contents<T>.toGetCommand(
@@ -30,6 +31,7 @@ fun <T : Any> Contents<T>.toGetCommand(
                     Component.text()
                         .color(CommandColors.BASE)
                         .append(Component.text("ℹ", CommandColors.HIGHLIGHT))
+                        .appendSpace()
                         .append(Component.text("Showing "))
                         .append(Component.text(entries.size, CommandColors.INFO))
                         .append(Component.text(" entr${if (entries.size == 1) "y" else "ies"}:"))
@@ -42,7 +44,14 @@ fun <T : Any> Contents<T>.toGetCommand(
                             .appendSpace()
                             .append(Component.text("-", CommandColors.INFO))
                             .appendSpace()
-                            .append(Component.text(entry.asString()))
+                            .append(
+                                Component.text(entry.asString(), NamedTextColor.GRAY)
+                                    .hoverEvent(
+                                        HoverEvent.showText(
+                                            Component.text(stringify(byKey(entry)!!), CommandColors.BASE)
+                                        )
+                                    )
+                            )
                     )
                 }
             }
