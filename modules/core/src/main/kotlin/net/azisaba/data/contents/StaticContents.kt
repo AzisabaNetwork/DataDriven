@@ -11,7 +11,11 @@ abstract class StaticContents<T : Any> : Contents<T> {
 
     override fun keyOf(value: T): ContentKey<T>? = byValue[value]
 
-    override fun all(): Collection<T> = byKey.values
+    override fun contentKeys(): Collection<ContentKey<T>> = byKey.keys
+
+    override fun contents(): Collection<T> = byValue.keys
+
+    override fun toMap(): Map<ContentKey<T>, T> = byKey.toMap()
 
     fun bootstrap() {
         val builder = BindingBuilder(byKey, byValue)

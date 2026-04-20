@@ -19,7 +19,11 @@ abstract class DynamicContents<T : Any>(
 
     override fun keyOf(value: T): ContentKey<T>? = requireLoaded().byValue[value]
 
-    override fun all(): Collection<T> = requireLoaded().byKey.values
+    override fun contentKeys(): Collection<ContentKey<T>> = requireLoaded().byKey.keys
+
+    override fun contents(): Collection<T> = requireLoaded().byValue.keys
+
+    override fun toMap(): Map<ContentKey<T>, T> = requireLoaded().byKey
 
     fun bootstrap(root: Path) {
         val contentsRoot = root.resolve(name)

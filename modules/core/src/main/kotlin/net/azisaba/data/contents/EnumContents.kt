@@ -32,5 +32,9 @@ abstract class EnumContents<T>(kClass: KClass<T>) : Contents<T> where T : Enum<T
 
     override fun keyOf(value: T): ContentKey<T>? = byValue[value]
 
-    override fun all(): Collection<T> = byValue.keys
+    override fun contentKeys(): Collection<ContentKey<T>> = byKey.keys
+
+    override fun contents(): Collection<T> = byValue.keys
+
+    override fun toMap(): Map<ContentKey<T>, T> = byKey
 }

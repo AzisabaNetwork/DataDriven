@@ -9,5 +9,9 @@ interface Contents<T : Any> {
 
     fun keyOfOrThrow(value: T): ContentKey<T> = keyOf(value) ?: throw NoSuchElementException("No content with $value")
 
-    fun all(): Collection<T>
+    fun contentKeys(): Collection<ContentKey<T>>
+
+    fun contents(): Collection<T>
+
+    fun toMap(): Map<ContentKey<T>, T>
 }

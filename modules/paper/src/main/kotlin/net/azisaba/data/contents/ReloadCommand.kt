@@ -25,8 +25,8 @@ fun <T : Any> DynamicContents<T>.toReloadCommand(literal: String): LiteralComman
 
             return@executes try {
                 val duration = measureTime { reload() }
-                val millis = duration.inWholeMilliseconds
-                val count = all().size
+
+                val contentCount = contents().size
 
                 source.sender.sendMessage(
                     Component.text()
@@ -40,11 +40,11 @@ fun <T : Any> DynamicContents<T>.toReloadCommand(literal: String): LiteralComman
                                 .color(CommandColors.BASE)
                                 .append(Component.text("("))
                                 .appendSpace()
-                                .append(Component.text(count, CommandColors.INFO))
+                                .append(Component.text(contentCount, CommandColors.INFO))
                                 .appendSpace()
-                                .append(Component.text("entr${if (count == 1) "y" else "ies"} in"))
+                                .append(Component.text("content${if (contentCount > 1) "s" else ""} in"))
                                 .appendSpace()
-                                .append(Component.text(millis, CommandColors.INFO))
+                                .append(Component.text(duration.inWholeMilliseconds, CommandColors.INFO))
                                 .append(Component.text("ms"))
                                 .appendSpace()
                                 .append(Component.text(")"))

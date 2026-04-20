@@ -17,11 +17,9 @@ fun <T : Any> Contents<T>.toGetCommand(
     .executes { ctx ->
         val source = ctx.source
 
-        val entries = all()
-            .mapNotNull { value -> keyOf(value) }
-            .sortedBy(Key::asString)
-        if (entries.isEmpty()) {
-            source.sender.sendMessage(Component.text("No entries found", CommandColors.WARN))
+        val contentKeys = contentKeys().sortedBy(ContentKey<T>::asString)
+        if (contentKeys.isEmpty()) {
+            source.sender.sendMessage(Component.text("No contents found", CommandColors.WARN))
             return@executes 0
         }
 
@@ -33,11 +31,11 @@ fun <T : Any> Contents<T>.toGetCommand(
                         .append(Component.text("ℹ", CommandColors.HIGHLIGHT))
                         .appendSpace()
                         .append(Component.text("Showing "))
-                        .append(Component.text(entries.size, CommandColors.INFO))
-                        .append(Component.text(" entr${if (entries.size == 1) "y" else "ies"}:"))
+                        .append(Component.text(contentKeys.size, CommandColors.INFO))
+                        .append(Component.text(" content${if (contentKeys.size > 1) "s" else ""}:"))
                         .build()
                 )
-                entries.forEach { entry ->
+                contentKeys.forEach { contentKey ->
                     builder.appendNewline()
                     builder.append(
                         Component.text()
@@ -45,10 +43,10 @@ fun <T : Any> Contents<T>.toGetCommand(
                             .append(Component.text("-", CommandColors.INFO))
                             .appendSpace()
                             .append(
-                                Component.text(entry.asString(), NamedTextColor.GRAY)
+                                Component.text(contentKey.asString(), NamedTextColor.GRAY)
                                     .hoverEvent(
                                         HoverEvent.showText(
-                                            Component.text(stringify(byKey(entry)!!), CommandColors.BASE)
+                                            Component.text(stringify(byKey(contentKey)!!), CommandColors.BASE)
                                         )
                                     )
                             )
@@ -64,15 +62,11 @@ fun <T : Any> Contents<T>.toGetCommand(
             .suggests { _, builder ->
                 val input = builder.remaining.lowercase()
 
-                all().mapNotNull { keyOf(it) }
-                    .filter {
-                        it.namespace().startsWith(input, ignoreCase = true) ||
-                                it.value().startsWith(input, ignoreCase = true) ||
-                                it.asString().startsWith(input, ignoreCase = true)
-                    }
-                    .map(Key::asString)
-                    .sorted()
-                    .forEach(builder::suggest)
+                contentKeys().filter {
+                    it.namespace().startsWith(input, ignoreCase = true) ||
+                            it.value().startsWith(input, ignoreCase = true) ||
+                            it.asString().startsWith(input, ignoreCase = true)
+                }.map(Key::asString).sorted().forEach(builder::suggest)
 
                 builder.buildFuture()
             }
@@ -84,7 +78,7 @@ fun <T : Any> Contents<T>.toGetCommand(
                 if (value == null) {
                     source.sender.sendMessage {
                         Component.text()
-                            .append(Component.text("No entry found for ", CommandColors.ERROR))
+                            .append(Component.text("No content found for ", CommandColors.ERROR))
                             .append(Component.text(key.asString(), NamedTextColor.GRAY))
                             .build()
                     }
