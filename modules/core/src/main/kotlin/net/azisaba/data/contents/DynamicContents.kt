@@ -25,7 +25,7 @@ abstract class DynamicContents<T : Any>(
 
     override fun toMap(): Map<ContentKey<T>, T> = requireLoaded().byKey
 
-    fun bootstrap(root: Path) {
+    open fun bootstrap(root: Path) {
         val contentsRoot = root.resolve(name)
         contentsRoot.createDirectories()
 
@@ -55,7 +55,7 @@ abstract class DynamicContents<T : Any>(
         cacheData.set(CacheData(root, byKey, byValue))
     }
 
-    fun reload() {
+    open fun reload() {
         val (root) = requireLoaded()
         bootstrap(root)
     }
