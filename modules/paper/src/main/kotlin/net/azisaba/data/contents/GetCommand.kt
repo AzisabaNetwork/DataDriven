@@ -4,8 +4,6 @@ import com.mojang.brigadier.Command
 import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
-import io.papermc.paper.command.brigadier.argument.ArgumentTypes
-import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent
 import net.kyori.adventure.text.format.NamedTextColor
@@ -58,32 +56,13 @@ fun <T : Any> Contents<T>.toGetCommand(
         Command.SINGLE_SUCCESS
     }
     .then(
-        Commands.argument("key", ArgumentTypes.key())
-            .suggests { _, builder ->
-                val input = builder.remaining.lowercase()
-
-                contentKeys().filter {
-                    it.namespace().startsWith(input, ignoreCase = true) ||
-                            it.value().startsWith(input, ignoreCase = true) ||
-                            it.asString().startsWith(input, ignoreCase = true)
-                }.map(Key::asString).sorted().forEach(builder::suggest)
-
-                builder.buildFuture()
-            }
+        Commands.argument("key", toArgumentType())
             .executes { ctx ->
                 val source = ctx.source
-                val key = ctx.getArgument("key", Key::class.java)
 
-                val value = byKey(ContentKey.key(key))
-                if (value == null) {
-                    source.sender.sendMessage {
-                        Component.text()
-                            .append(Component.text("No content found for ", CommandColors.ERROR))
-                            .append(Component.text(key.asString(), NamedTextColor.GRAY))
-                            .build()
-                    }
-                    return@executes 0
-                }
+                @Suppress("UNCHECKED_CAST")
+                val content = ctx.getArgument("key", Any::class.java) as T
+                val contentKey = keyOfOrThrow(content)
 
                 source.sender.sendMessage(
                     Component.text()
@@ -91,10 +70,10 @@ fun <T : Any> Contents<T>.toGetCommand(
                         .append(Component.text("ℹ", CommandColors.HIGHLIGHT))
                         .appendSpace()
                         .append(Component.text("'"))
-                        .append(Component.text(key.asString(), CommandColors.HIGHLIGHT))
+                        .append(Component.text(contentKey.asString(), CommandColors.HIGHLIGHT))
                         .append(Component.text("'"))
                         .appendNewline()
-                        .append(Component.text(stringify(value)))
+                        .append(Component.text(stringify(content)))
                         .build()
                 )
 
