@@ -20,7 +20,7 @@ private class ContentArgumentType<T : Any>(private val contents: Contents<T>) : 
 
     override fun parse(reader: StringReader): T {
         val key = nativeType.parse(reader)
-        val contentKey = ContentKey.key<T>(key)
+        val contentKey = contentKeyOf<T>(key)
         val content = contents.byKey(contentKey) ?: throw ERROR_NOT_FOUND.create(contentKey.asString())
         return content
     }
