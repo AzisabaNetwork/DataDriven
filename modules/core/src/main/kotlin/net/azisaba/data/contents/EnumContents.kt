@@ -8,33 +8,43 @@ abstract class EnumContents<T>(kClass: KClass<T>) : Contents<T> where T : Enum<T
     private val byValue: Map<T, ContentKey<T>>
 
     init {
-        val constants = kClass.java.enumConstants
+        val enumConstants = kClass.java.enumConstants
 
-        val keyMap = HashMap<ContentKey<T>, T>(constants.size)
-        val valueMap = HashMap<T, ContentKey<T>>(constants.size)
+        val keyMap = HashMap<ContentKey<T>, T>(enumConstants.size)
+        val valueMap = HashMap<T, ContentKey<T>>(enumConstants.size)
 
-        for (constant in constants) {
-            val key = ContentKey.key<T>(constant.key())
+        for (enumConstant in enumConstants) {
+            val key = contentKeyOf<T>(enumConstant.key())
 
             require(key !in keyMap) {
                 "Duplicate content key detected: $key in ${kClass.qualifiedName}"
             }
 
-            keyMap[key] = constant
-            valueMap[constant] = key
+            keyMap[key] = enumConstant
+            valueMap[enumConstant] = key
         }
 
         byKey = keyMap
         byValue = valueMap
     }
 
-    override fun byKey(key: ContentKey<T>): T? = byKey[key]
+    override fun byKey(key: ContentKey<T>): T? {
+        return byKey[key]
+    }
 
-    override fun keyOf(value: T): ContentKey<T>? = byValue[value]
+    override fun keyOf(value: T): ContentKey<T>? {
+        return byValue[value]
+    }
 
-    override fun contentKeys(): Collection<ContentKey<T>> = byKey.keys
+    override fun contentKeys(): Collection<ContentKey<T>> {
+        return byKey.keys
+    }
 
-    override fun contents(): Collection<T> = byValue.keys
+    override fun contents(): Collection<T> {
+        return byValue.keys
+    }
 
-    override fun toMap(): Map<ContentKey<T>, T> = byKey
+    override fun toMap(): Map<ContentKey<T>, T> {
+        return byKey
+    }
 }

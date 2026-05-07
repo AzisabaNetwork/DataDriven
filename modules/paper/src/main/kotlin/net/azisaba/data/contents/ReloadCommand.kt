@@ -7,7 +7,7 @@ import io.papermc.paper.command.brigadier.Commands
 import net.kyori.adventure.text.Component
 import kotlin.time.measureTime
 
-fun <T : Any> DynamicContents<T>.toReloadCommand(literal: String): LiteralCommandNode<CommandSourceStack> =
+fun <T : Any> ReloadableContents<T>.toReloadCommand(literal: String): LiteralCommandNode<CommandSourceStack> =
     Commands.literal(literal)
         .executes { ctx ->
             val source = ctx.source

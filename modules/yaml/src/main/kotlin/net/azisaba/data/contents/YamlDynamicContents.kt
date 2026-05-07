@@ -1,5 +1,6 @@
 package net.azisaba.data.contents
 
+import com.charleskorn.kaml.AnchorsAndAliases
 import com.charleskorn.kaml.PolymorphismStyle
 import com.charleskorn.kaml.Yaml
 import com.charleskorn.kaml.YamlConfiguration
@@ -13,6 +14,7 @@ abstract class YamlDynamicContents<T : Any>(name: String, serializer: Lazy<KSeri
         configuration = YamlConfiguration(
             polymorphismStyle = PolymorphismStyle.Property,
             polymorphismPropertyName = "kind",
+            anchorsAndAliases = AnchorsAndAliases.Permitted(),
         )
     ),
 )

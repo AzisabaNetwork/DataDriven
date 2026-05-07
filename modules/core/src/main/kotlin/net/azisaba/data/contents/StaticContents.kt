@@ -7,15 +7,25 @@ abstract class StaticContents<T : Any> : Contents<T> {
     private val byKey: ConcurrentMap<ContentKey<T>, T> = ConcurrentHashMap()
     private val byValue: ConcurrentMap<T, ContentKey<T>> = ConcurrentHashMap()
 
-    override fun byKey(key: ContentKey<T>): T? = byKey[key]
+    override fun byKey(key: ContentKey<T>): T? {
+        return byKey[key]
+    }
 
-    override fun keyOf(value: T): ContentKey<T>? = byValue[value]
+    override fun keyOf(value: T): ContentKey<T>? {
+        return byValue[value]
+    }
 
-    override fun contentKeys(): Collection<ContentKey<T>> = byKey.keys
+    override fun contentKeys(): Collection<ContentKey<T>> {
+        return byKey.keys
+    }
 
-    override fun contents(): Collection<T> = byValue.keys
+    override fun contents(): Collection<T> {
+        return byValue.keys
+    }
 
-    override fun toMap(): Map<ContentKey<T>, T> = byKey.toMap()
+    override fun toMap(): Map<ContentKey<T>, T> {
+        return byKey.toMap()
+    }
 
     fun bootstrap() {
         val builder = BindingBuilder(byKey, byValue)

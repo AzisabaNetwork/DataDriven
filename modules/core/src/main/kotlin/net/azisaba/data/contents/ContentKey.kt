@@ -4,24 +4,34 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.KeyPattern
 import net.kyori.adventure.key.Namespaced
 
+fun <T : Any> contentKeyOf(key: Key): ContentKey<T> {
+    return ContentKeyImpl(key)
+}
+
+fun <T : Any> contentKeyOf(@KeyPattern string: String): ContentKey<T> {
+    return ContentKeyImpl(Key.key(string))
+}
+
+fun <T : Any> contentKeyOf(@KeyPattern.Namespace namespace: String, @KeyPattern.Value value: String): ContentKey<T> {
+    return ContentKeyImpl(Key.key(namespace, value))
+}
+
+fun <T : Any> contentKeyOf(namespaced: Namespaced, @KeyPattern.Value value: String): ContentKey<T> {
+    return ContentKeyImpl(Key.key(namespaced, value))
+}
+
 sealed interface ContentKey<T : Any> : Key {
-    companion object {
-        fun <T : Any> key(@KeyPattern.Namespace namespace: String, @KeyPattern.Value value: String): ContentKey<T> =
-            key(Key.key(namespace, value))
-
-        fun <T : Any> key(namespaced: Namespaced, @KeyPattern.Value value: String): ContentKey<T> =
-            key(Key.key(namespaced, value))
-
-        fun <T : Any> key(key: Key): ContentKey<T> = ContentKeyImpl(key)
+    fun resolve(contents: Contents<T>): T {
+        return contents.byKeyOrThrow(this)
     }
 }
 
-private data class ContentKeyImpl<T : Any>(private val key: Key) : ContentKey<T> {
-    override fun namespace(): String = key.namespace()
+private data class ContentKeyImpl<T : Any>(private val delegate: Key) : ContentKey<T> {
+    override fun namespace(): String = delegate.namespace()
 
-    override fun value(): String = key.value()
+    override fun value(): String = delegate.value()
 
-    override fun asString(): String = key.asString()
+    override fun asString(): String = delegate.asString()
 
     override fun toString(): String = "ContentKey[${namespace()}:${value()}]"
 }

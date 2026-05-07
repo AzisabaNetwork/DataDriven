@@ -8,11 +8,11 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.io.path.*
 
 abstract class DynamicContents<T : Any>(
-    val name: String,
+    override val name: String,
     private val fileExtensions: Set<String>,
     private val serializer: Lazy<KSerializer<T>>,
     private val stringFormat: StringFormat,
-) : Contents<T> {
+) : ReloadableContents<T> {
     private val cacheData: AtomicReference<CacheData<T>?> = AtomicReference(null)
 
     override fun byKey(key: ContentKey<T>): T? = requireLoaded().byKey[key]
@@ -55,7 +55,7 @@ abstract class DynamicContents<T : Any>(
         cacheData.set(CacheData(root, byKey, byValue))
     }
 
-    open fun reload() {
+    override fun reload() {
         val (root) = requireLoaded()
         bootstrap(root)
     }
@@ -88,7 +88,7 @@ abstract class DynamicContents<T : Any>(
         }
 
         return try {
-            ContentKey.key(namespace, value)
+            contentKeyOf(namespace, value)
         } catch (e: Exception) {
             throw IllegalArgumentException("Invalid content key: $namespace:$value ($this)", e)
         }
