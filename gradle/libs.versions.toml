@@ -1,8 +1,7 @@
 [versions]
 kotlin = "2.3.10"
 kotlinx-serialization = "1.10.0"
-minecraft-serialization = "1.0.0-R0.8-SNAPSHOT"
-kaml = "0.104.0"
+minecraft-serialization = "1.0.0-R0.9-SNAPSHOT"
 adventure = "4.26.1"
 paper = "1.21.11-R0.1-SNAPSHOT"
 
@@ -12,9 +11,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 
 [libraries]
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinx-serialization" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 minecraft-serialization-adventure = { module = "net.azisaba.serialization:adventure", version.ref = "minecraft-serialization" }
 minecraft-serialization-paper = { module = "net.azisaba.serialization:paper", version.ref = "minecraft-serialization" }
-kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
 adventure-api = { module = "net.kyori:adventure-api", version.ref = "adventure" }
 paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }

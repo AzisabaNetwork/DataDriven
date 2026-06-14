@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "net.azisaba.data"
-version = System.getenv("VERSION") ?: "0.0.0-SNAPSHOT"
+version = System.getenv("VERSION") ?: "1.0.0-R0.13-SNAPSHOT"
 
 val leafProjects = subprojects.filter { it.childProjects.isEmpty() }
 
@@ -19,6 +19,7 @@ configure(leafProjects) {
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     repositories {
+        mavenLocal()
         mavenCentral()
         maven { url = uri("https://repo.azisaba.net/repository/maven-snapshots/") }
     }
@@ -64,5 +65,13 @@ configure(leafProjects) {
 tasks.register("publishAll") {
     dependsOn(
         leafProjects.map { "${it.path}:publish" }
+    )
+}
+
+tasks.register("publishAllToMavenLocal") {
+    group = "publishing"
+    description = "Publishes all leaf projects to the local Maven repository."
+    dependsOn(
+        leafProjects.map { "${it.path}:publishToMavenLocal" }
     )
 }
