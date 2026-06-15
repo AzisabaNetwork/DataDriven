@@ -3,6 +3,7 @@ package net.azisaba.data.provider
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.azisaba.data.Weighted
+import net.azisaba.data.randomWeighted
 import net.kyori.examination.Examinable
 import net.kyori.examination.ExaminableProperty
 import java.util.stream.Stream
@@ -81,16 +82,7 @@ sealed interface ChoiceProvider<T : Any> : Examinable {
         }
 
         override fun choice(random: Random): T {
-            var r = random.nextInt(totalWeight)
-
-            for (entry in entries) {
-                if (r < entry.weight) {
-                    return entry.value
-                }
-                r -= entry.weight
-            }
-
-            return entries.last().value
+            return entries.randomWeighted(random).value
         }
 
         override fun examinableProperties(): Stream<out ExaminableProperty?> {
