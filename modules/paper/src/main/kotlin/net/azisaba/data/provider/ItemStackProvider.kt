@@ -11,7 +11,8 @@ import kotlin.random.Random
 
 @Serializable
 data class ItemStackProvider(
-    @Serializable(with = ItemTypeSerializer::class) val type: ItemType,
+    @Serializable(with = ItemTypeSerializer::class)
+    val type: ItemType,
     val count: IntProvider,
 ) : Examinable {
     fun create(random: Random = Random.Default): ItemStack {
