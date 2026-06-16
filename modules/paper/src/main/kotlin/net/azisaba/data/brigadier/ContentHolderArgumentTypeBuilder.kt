@@ -16,16 +16,23 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import java.util.concurrent.CompletableFuture
 
+private val ERROR_NOT_FOUND: DynamicCommandExceptionType = DynamicCommandExceptionType { key ->
+    MessageComponentSerializer.message().serialize(
+        withFailurePrefix {
+            append(Component.text("Content not found: "))
+            append(Component.text(key.toString(), NamedTextColor.WHITE))
+        }
+    )
+}
+
 /**
- * Creates a Paper Brigadier argument type that resolves keys to content holders.
+ * Creates a Brigadier argument type that resolves a content key into a [ContentHolder].
  *
- * The argument uses Paper's native key argument and suggests keys currently present in this
- * collection.
+ * The argument accepts Adventure [Key] values and suggests keys registered in this [Contents].
  *
- * @param T the content value type
- * @return an argument type that resolves existing content keys
+ * @return the created argument type.
  */
-fun <T : Any> Contents<T>.asHolderArgumentType(): ArgumentType<ContentHolder<T>> {
+fun <T : Any> Contents<T>.buildHolderArgumentType(): ArgumentType<ContentHolder<T>> {
     return ContentHolderArgumentTypeImpl(this)
 }
 
@@ -35,9 +42,7 @@ private class ContentHolderArgumentTypeImpl<T : Any>(
     override fun getNativeType(): ArgumentType<Key> = ArgumentTypes.key()
 
     override fun convert(nativeType: Key): ContentHolder<T> {
-        val key = contents.keySet().find { it.asString() == nativeType.asString() }
-            ?: throw ERROR_NOT_FOUND.create(nativeType.asString())
-        return ContentHolder(key, contents)
+        return contents.holderByKey(nativeType) ?: throw ERROR_NOT_FOUND.create(nativeType.asString())
     }
 
     override fun <S : Any> listSuggestions(
@@ -54,13 +59,5 @@ private class ContentHolderArgumentTypeImpl<T : Any>(
             .sortedBy(ContentKey<T>::asString)
             .forEach { key -> builder.suggest(key.asString()) }
         return builder.buildFuture()
-    }
-
-    private companion object {
-        val ERROR_NOT_FOUND: DynamicCommandExceptionType = DynamicCommandExceptionType { key ->
-            MessageComponentSerializer.message().serialize(
-                Component.text("Content not found: $key", NamedTextColor.RED)
-            )
-        }
     }
 }
