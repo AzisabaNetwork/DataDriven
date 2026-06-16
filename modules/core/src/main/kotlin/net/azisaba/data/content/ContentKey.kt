@@ -72,14 +72,16 @@ fun <T : Any, R : T> ContentKey<R>.resolve(contents: Contents<T>): R {
  *
  * @param T the identified value type
  */
-sealed interface ContentKey<T : Any> : Key {
+sealed interface ContentKey<out T : Any> : Key {
     /** The type represented by this key. */
     val kType: KType
+
+    override fun key(): Key {
+        return Key.key(namespace(), value())
+    }
 }
 
 private data class ContentKeyImpl<T : Any>(private val key: Key, override val kType: KType) : ContentKey<T> {
-    override fun key(): Key = key
-
     override fun namespace(): String = key.namespace()
 
     override fun value(): String = key.value()
