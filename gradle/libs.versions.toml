@@ -1,7 +1,7 @@
 [versions]
 kotlin = "2.3.10"
 kotlinx-serialization = "1.10.0"
-minecraft-serialization = "1.0.0-R0.9-SNAPSHOT"
+minecraft-serialization = "1.0.0-R0.10-SNAPSHOT"
 adventure = "4.26.1"
 paper = "1.21.11-R0.1-SNAPSHOT"
 
