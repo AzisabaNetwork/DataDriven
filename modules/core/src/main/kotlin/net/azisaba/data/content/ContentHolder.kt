@@ -12,7 +12,9 @@ import net.kyori.adventure.key.KeyedValue
 import net.kyori.examination.Examinable
 import net.kyori.examination.ExaminableProperty
 import java.util.stream.Stream
+import kotlin.reflect.KClass
 import kotlin.reflect.KType
+import kotlin.reflect.full.createType
 
 /**
  * Resolves a value from [contents] using [key].
@@ -54,15 +56,21 @@ data class ContentHolder<T : Any>(val key: ContentKey<T>, val contents: Contents
  * key is not detected until the holder is accessed.
  *
  * @param T the held value type
+ * @param kType the type assigned to deserialized keys
  * @param contents the collection used by deserialized holders
- * @param contentType the type assigned to deserialized keys
  * @param validateOnDeserialize whether to reject keys missing from [contents]
  */
 abstract class ContentHolderSerializer<T : Any>(
+    private val kType: KType,
     private val contents: Contents<T>,
-    private val contentType: KType,
     private val validateOnDeserialize: Boolean = true,
 ) : KSerializer<ContentHolder<T>> {
+    constructor(
+        kClass: KClass<T>,
+        contents: Contents<T>,
+        validateOnDeserialize: Boolean = true,
+    ) : this(kClass.createType(), contents, validateOnDeserialize)
+
     override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ContentHolder", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ContentHolder<T>) {
@@ -70,7 +78,7 @@ abstract class ContentHolderSerializer<T : Any>(
     }
 
     override fun deserialize(decoder: Decoder): ContentHolder<T> {
-        val contentKey: ContentKey<T> = contentKeyOf(Key.key(decoder.decodeString()), contentType)
+        val contentKey: ContentKey<T> = contentKeyOf(Key.key(decoder.decodeString()), kType)
 
         if (validateOnDeserialize) {
             require(contentKey in contents) {
