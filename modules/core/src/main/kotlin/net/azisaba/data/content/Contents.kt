@@ -133,6 +133,19 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
     fun keyOf(value: T): ContentKey<T>?
 
     /**
+     * Returns the key associated with [value].
+     *
+     * This operation compares value instances by identity (`===`), not by equality.
+     *
+     * @param value the value instance to query
+     * @return the key associated with [value]
+     * @throws NoSuchElementException if this collection does not contain [value]
+     */
+    fun keyOfOrThrow(value: T): ContentKey<T> {
+        return keyOf(value) ?: throw NoSuchElementException("No content with $value")
+    }
+
+    /**
      * Returns all values contained in this collection.
      *
      * The returned collection contains one value per key. Equal values may appear multiple times

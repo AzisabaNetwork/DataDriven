@@ -11,10 +11,21 @@ import kotlin.reflect.typeOf
  *
  * @param T the identified value type
  * @param key the Adventure key to wrap
- * @return a content key with the same namespace and value
+ * @return the created content key
  */
 inline fun <reified T : Any> contentKeyOf(key: Key): ContentKey<T> {
     return contentKeyOf(key, typeOf<T>())
+}
+
+/**
+ * Creates a content key from [string].
+ *
+ * @param T the identified value type
+ * @param string the key string
+ * @return the created content key
+ */
+inline fun <reified T : Any> contentKeyOf(string: String): ContentKey<T> {
+    return contentKeyOf(Key.key(string), typeOf<T>())
 }
 
 /**
