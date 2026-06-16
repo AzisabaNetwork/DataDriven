@@ -515,17 +515,17 @@ open class EnumContents<T>(kClass: KClass<T>) : IndexContents<T>() where T : Enu
 @ApiStatus.Experimental
 @OptIn(ExperimentalAtomicApi::class)
 open class DirectoryContents<T : Any>(
-    private val contentType: KType,
+    private val kType: KType,
     private val kSerializer: Lazy<KSerializer<T>>,
     private val stringFormat: StringFormat,
     vararg extensions: String,
 ) : IndexContents<T>() {
     constructor(
-        contentType: KClass<T>,
+        kClass: KClass<T>,
         kSerializer: Lazy<KSerializer<T>>,
         stringFormat: StringFormat,
         vararg extensions: String,
-    ) : this(contentType.createType(), kSerializer, stringFormat, *extensions)
+    ) : this(kClass.createType(), kSerializer, stringFormat, *extensions)
 
     final override val index: Contents.Index<T>
         get() = requireLoaded()
@@ -592,7 +592,7 @@ open class DirectoryContents<T : Any>(
             }
         }
 
-        return contentKeyOf(Key.key(namespace, value), contentType)
+        return contentKeyOf(Key.key(namespace, value), kType)
     }
 
     private fun Path.deserialized(): T {
