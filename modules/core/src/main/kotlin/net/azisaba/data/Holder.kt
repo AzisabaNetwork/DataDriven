@@ -10,6 +10,16 @@ package net.azisaba.data
 fun <T : Any> Holder(value: T): Holder<T> = Holder { value }
 
 /**
+ * Returns the value if available, or the result of [defaultValue] otherwise.
+ *
+ * @param defaultValue the fallback value provider
+ * @return the held value, or the fallback value
+ */
+inline fun <T : Any> Holder<T>.getOrElse(defaultValue: () -> T): T {
+    return getOrNull() ?: defaultValue()
+}
+
+/**
  * Provides a value that may be computed, loaded lazily, or absent.
  *
  * @param T the provided value type
@@ -18,7 +28,7 @@ fun interface Holder<T : Any> {
     /**
      * Returns the value.
      *
-     * @return the available value
+     * @return the held value
      * @throws NoSuchElementException if no value is available
      */
     fun get(): T {
@@ -28,9 +38,19 @@ fun interface Holder<T : Any> {
     /**
      * Returns the value if available.
      *
-     * @return the value, or `null` if no value is available
+     * @return the held value, or `null` if no value is available
      */
     fun getOrNull(): T?
+
+    /**
+     * Returns the value if available, or [defaultValue] otherwise.
+     *
+     * @param defaultValue the fallback value
+     * @return the held value, or the fallback value
+     */
+    fun getOrDefault(defaultValue: T): T {
+        return getOrNull() ?: defaultValue
+    }
 
     /**
      * Returns whether [get] completes successfully.
@@ -40,7 +60,7 @@ fun interface Holder<T : Any> {
      * @return `true` if [get] completes successfully
      */
     fun isPresent(): Boolean {
-        return runCatching(::get).isSuccess
+        return getOrNull() != null
     }
 
     /**
@@ -52,7 +72,7 @@ fun interface Holder<T : Any> {
      * @param transform the transformation to apply
      * @return a holder that provides the transformed value
      */
-    fun <R : T> map(transform: (T) -> R): Holder<R> = Holder {
+    fun <R : Any> map(transform: (T) -> R): Holder<R> = Holder {
         getOrNull()?.let(transform)
     }
 }
