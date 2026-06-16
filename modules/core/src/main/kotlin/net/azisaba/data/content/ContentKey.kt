@@ -3,6 +3,8 @@ package net.azisaba.data.content
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.KeyPattern
 import net.kyori.adventure.key.Namespaced
+import kotlin.reflect.KType
+import kotlin.reflect.typeOf
 
 /**
  * Creates a content key from [key].
@@ -11,20 +13,8 @@ import net.kyori.adventure.key.Namespaced
  * @param key the Adventure key to wrap
  * @return a content key with the same namespace and value
  */
-fun <T : Any> contentKeyOf(key: Key): ContentKey<T> {
-    return ContentKeyImpl(key)
-}
-
-/**
- * Creates a content key from an Adventure key string.
- *
- * @param T the identified value type
- * @param string the key in `namespace:value` form
- * @return the parsed content key
- * @throws IllegalArgumentException if [string] is not a valid Adventure key
- */
-fun <T : Any> contentKeyOf(@KeyPattern string: String): ContentKey<T> {
-    return ContentKeyImpl(Key.key(string))
+inline fun <reified T : Any> contentKeyOf(key: Key): ContentKey<T> {
+    return contentKeyOf(key, typeOf<T>())
 }
 
 /**
@@ -36,8 +26,11 @@ fun <T : Any> contentKeyOf(@KeyPattern string: String): ContentKey<T> {
  * @return the created content key
  * @throws IllegalArgumentException if [namespace] or [value] is invalid
  */
-fun <T : Any> contentKeyOf(namespace: String, @KeyPattern value: String): ContentKey<T> {
-    return ContentKeyImpl(Key.key(namespace, value))
+inline fun <reified T : Any> contentKeyOf(
+    @KeyPattern.Namespace namespace: String,
+    @KeyPattern.Value value: String,
+): ContentKey<T> {
+    return contentKeyOf(Key.key(namespace, value), typeOf<T>())
 }
 
 /**
@@ -49,8 +42,29 @@ fun <T : Any> contentKeyOf(namespace: String, @KeyPattern value: String): Conten
  * @return the created content key
  * @throws IllegalArgumentException if the namespace or [value] is invalid
  */
-fun <T : Any> contentKeyOf(namespaced: Namespaced, @KeyPattern value: String): ContentKey<T> {
-    return ContentKeyImpl(Key.key(namespaced, value))
+inline fun <reified T : Any> contentKeyOf(
+    namespaced: Namespaced,
+    @KeyPattern.Value value: String,
+): ContentKey<T> {
+    return contentKeyOf(Key.key(namespaced, value), typeOf<T>())
+}
+
+@PublishedApi
+internal fun <T : Any> contentKeyOf(key: Key, type: KType): ContentKey<T> {
+    return ContentKeyImpl(key, type)
+}
+
+/**
+ * Resolves this key against a collection of its type or a supertype.
+ *
+ * @param T the collection value type
+ * @param R the value type represented by this key
+ * @param contents the collection to query
+ * @return the associated value
+ * @throws NoSuchElementException if [contents] has no value for this key
+ */
+fun <T : Any, R : T> ContentKey<R>.resolve(contents: Contents<T>): R {
+    return contents.byKeyOrThrow(this)
 }
 
 /**
@@ -59,28 +73,18 @@ fun <T : Any> contentKeyOf(namespaced: Namespaced, @KeyPattern value: String): C
  * @param T the identified value type
  */
 sealed interface ContentKey<T : Any> : Key {
-    /**
-     * Resolves this key against [contents].
-     *
-     * @param contents the collection to query
-     * @return the associated value
-     * @throws NoSuchElementException if [contents] has no value for this key
-     *
-     * @see [contentKeyOf]
-     * @see [Contents.byKey]
-     * @see [Contents.byKeyOrThrow]
-     */
-    fun resolve(contents: Contents<T>): T {
-        return contents.byKeyOrThrow(this)
-    }
+    /** The type represented by this key. */
+    val kType: KType
 }
 
-private data class ContentKeyImpl<T : Any>(private val delegate: Key) : ContentKey<T> {
-    override fun namespace(): String = delegate.namespace()
+private data class ContentKeyImpl<T : Any>(private val key: Key, override val kType: KType) : ContentKey<T> {
+    override fun key(): Key = key
 
-    override fun value(): String = delegate.value()
+    override fun namespace(): String = key.namespace()
 
-    override fun asString(): String = delegate.asString()
+    override fun value(): String = key.value()
+
+    override fun asString(): String = key.asString()
 
     override fun toString(): String = "ContentKey[${namespace()}:${value()}]"
 }

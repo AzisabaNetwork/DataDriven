@@ -2,8 +2,9 @@ package net.azisaba.data.content
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.StringFormat
-import net.azisaba.data.Holder
+import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.Keyed
+import net.kyori.adventure.key.KeyedValue
 import net.kyori.examination.Examinable
 import net.kyori.examination.ExaminableProperty
 import org.jetbrains.annotations.ApiStatus
@@ -16,6 +17,17 @@ import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.io.path.*
 import kotlin.reflect.KClass
+import kotlin.reflect.KType
+import kotlin.reflect.full.createType
+import kotlin.reflect.full.isSubtypeOf
+
+private fun <T : Any, R : T> KeyedValue<T>.valueAs(key: ContentKey<R>): R? {
+    val registeredKey = key() as? ContentKey<*> ?: return null
+    if (!registeredKey.kType.isSubtypeOf(key.kType)) return null
+
+    @Suppress("UNCHECKED_CAST")
+    return value() as R
+}
 
 /**
  * Stores values under unique typed keys.
@@ -42,7 +54,7 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
      * @param key the key to query
      * @return the associated value, or `null` if [key] is not present
      */
-    fun byKey(key: ContentKey<T>): T?
+    fun <R : T> byKey(key: ContentKey<R>): R?
 
     /**
      * Returns the value associated with the given [ContentKey].
@@ -51,8 +63,34 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
      * @return the associated value
      * @throws NoSuchElementException if [key] is not present
      */
-    fun byKeyOrThrow(key: ContentKey<T>): T {
+    fun <R : T> byKeyOrThrow(key: ContentKey<R>): R {
         return byKey(key) ?: throw kotlin.NoSuchElementException("No content with $key")
+    }
+
+    /**
+     * Returns a holder that resolves the value associated with the given [ContentKey].
+     *
+     * The returned holder resolves the value each time it is accessed.
+     *
+     * @param key the key to query
+     * @return a holder for the associated value, or `null` if [key] is not present
+     */
+    fun <R : T> holderByKey(key: ContentKey<R>): ContentHolder<R>? {
+        if (byKey(key) == null) {
+            return null
+        }
+        return ContentHolder(key, this)
+    }
+
+    /**
+     * Returns a holder that resolves the value associated with the given [ContentKey].
+     *
+     * @param key the key to query
+     * @return a holder for the associated value
+     * @throws NoSuchElementException if [key] is not present
+     */
+    fun <R : T> holderByKeyOrThrow(key: ContentKey<R>): ContentHolder<R> {
+        return holderByKey(key) ?: throw kotlin.NoSuchElementException("No content with $key")
     }
 
     /**
@@ -62,14 +100,14 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
      *
      * @return a collection containing all values
      */
-    fun contents(): Collection<T>
+    fun values(): Collection<T>
 
     /**
      * Returns all keys contained in this collection.
      *
      * @return a set containing all keys
      */
-    fun contentKeys(): Set<ContentKey<T>>
+    fun keySet(): Set<ContentKey<T>>
 
     /**
      * Returns whether this collection contains no values.
@@ -77,7 +115,7 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
      * @return `true` if this collection is empty
      */
     fun isEmpty(): Boolean {
-        return contentKeys().isEmpty()
+        return keySet().isEmpty()
     }
 
     /**
@@ -86,7 +124,7 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
      * @return `true` if this collection is not empty
      */
     fun isNotEmpty(): Boolean {
-        return contentKeys().isNotEmpty()
+        return keySet().isNotEmpty()
     }
 
     /**
@@ -95,7 +133,7 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
      * @param key the key to test
      * @return `true` if the key is present
      */
-    operator fun contains(key: ContentKey<T>): Boolean {
+    operator fun <R : T> contains(key: ContentKey<R>): Boolean {
         return byKey(key) != null
     }
 
@@ -129,7 +167,7 @@ open class MutableContents<T : Any> : Contents<T> {
     override val size: Int
         get() = byKey.size
 
-    private val byKey: ConcurrentMap<ContentKey<T>, T> = ConcurrentHashMap()
+    private val byKey: ConcurrentMap<Key, KeyedValue<T>> = ConcurrentHashMap()
 
     /**
      * Registers [value] under [key].
@@ -139,8 +177,8 @@ open class MutableContents<T : Any> : Contents<T> {
      * @return the registered value
      * @throws IllegalArgumentException if [key] is already registered
      */
-    open fun register(key: ContentKey<T>, value: T): Holder<T> {
-        require(byKey.putIfAbsent(key, value) == null) {
+    open fun <R : T> register(key: ContentKey<R>, value: R): ContentHolder<R> {
+        require(byKey.putIfAbsent(key.key(), KeyedValue.keyedValue(key, value)) == null) {
             "Content key $key is already registered"
         }
         return ContentHolder(key, this)
@@ -152,26 +190,35 @@ open class MutableContents<T : Any> : Contents<T> {
      * @param key the key to remove
      * @return the removed value, or `null` if [key] is not present
      */
-    open fun unregister(key: ContentKey<T>): T? {
-        return byKey.remove(key)
+    open fun <R : T> unregister(key: ContentKey<R>): R? {
+        while (true) {
+            val indexKey = key.key()
+            val entry = byKey[indexKey] ?: return null
+            val value = entry.valueAs(key) ?: return null
+            if (byKey.remove(indexKey, entry)) return value
+        }
     }
 
-    override fun byKey(key: ContentKey<T>): T? {
-        return byKey[key]
+    override fun <R : T> byKey(key: ContentKey<R>): R? {
+        return byKey[key.key()]?.valueAs(key)
     }
 
-    override fun contents(): Collection<T> {
-        return byKey.values.toList()
+    override fun values(): Collection<T> {
+        return byKey.values.map(KeyedValue<T>::value)
     }
 
-    override fun contentKeys(): Set<ContentKey<T>> {
-        return byKey.keys.toSet()
+    override fun keySet(): Set<ContentKey<T>> {
+        @Suppress("UNCHECKED_CAST")
+        return byKey.values.mapTo(LinkedHashSet()) { it.key() as ContentKey<T> }
     }
 
     override fun iterator(): Iterator<ContentHolder<T>> {
-        return byKey.keys
+        return byKey.values
             .asSequence()
-            .map { key -> ContentHolder(key, this) }
+            .map { entry ->
+                @Suppress("UNCHECKED_CAST")
+                ContentHolder(entry.key() as ContentKey<T>, this)
+            }
             .iterator()
     }
 }
@@ -190,17 +237,17 @@ open class MutableContents<T : Any> : Contents<T> {
 open class EnumContents<T>(kClass: KClass<T>) : Contents<T> where T : Enum<T>, T : Keyed {
     override val size: Int = kClass.java.enumConstants.size
 
-    private val byKey: Map<ContentKey<T>, T>
+    private val byKey: Map<Key, KeyedValue<T>>
 
     init {
         val enumConstants = kClass.java.enumConstants
 
-        val keyMap = HashMap<ContentKey<T>, T>(enumConstants.size)
+        val keyMap = HashMap<Key, KeyedValue<T>>(enumConstants.size)
 
         for (enumConstant in enumConstants) {
-            val key = contentKeyOf<T>(enumConstant.key())
+            val key = contentKeyOf<T>(enumConstant.key(), kClass.createType())
 
-            require(keyMap.putIfAbsent(key, enumConstant) == null) {
+            require(keyMap.putIfAbsent(key.key(), KeyedValue.keyedValue(key, enumConstant)) == null) {
                 "Duplicate content key detected: $key in ${kClass.qualifiedName}"
             }
         }
@@ -208,22 +255,26 @@ open class EnumContents<T>(kClass: KClass<T>) : Contents<T> where T : Enum<T>, T
         byKey = keyMap
     }
 
-    override fun byKey(key: ContentKey<T>): T? {
-        return byKey[key]
+    override fun <R : T> byKey(key: ContentKey<R>): R? {
+        return byKey[key.key()]?.valueAs(key)
     }
 
-    override fun contents(): Collection<T> {
-        return byKey.values.toList()
+    override fun values(): Collection<T> {
+        return byKey.values.map(KeyedValue<T>::value)
     }
 
-    override fun contentKeys(): Set<ContentKey<T>> {
-        return byKey.keys
+    override fun keySet(): Set<ContentKey<T>> {
+        @Suppress("UNCHECKED_CAST")
+        return byKey.values.mapTo(LinkedHashSet()) { it.key() as ContentKey<T> }
     }
 
     override fun iterator(): Iterator<ContentHolder<T>> {
-        return byKey.keys
+        return byKey.values
             .asSequence()
-            .map { key -> ContentHolder(key, this) }
+            .map { entry ->
+                @Suppress("UNCHECKED_CAST")
+                ContentHolder(entry.key() as ContentKey<T>, this)
+            }
             .iterator()
     }
 }
@@ -247,10 +298,18 @@ open class EnumContents<T>(kClass: KClass<T>) : Contents<T> where T : Enum<T>, T
 @ApiStatus.Experimental
 @OptIn(ExperimentalAtomicApi::class)
 open class DirectoryContents<T : Any>(
+    private val contentType: KType,
     private val kSerializer: Lazy<KSerializer<T>>,
     private val stringFormat: StringFormat,
     vararg extensions: String,
 ) : Contents<T> {
+    constructor(
+        contentType: KClass<T>,
+        kSerializer: Lazy<KSerializer<T>>,
+        stringFormat: StringFormat,
+        vararg extensions: String,
+    ) : this(contentType.createType(), kSerializer, stringFormat, *extensions)
+
     override val size: Int
         get() = requireLoaded().byKey.size
 
@@ -275,12 +334,12 @@ open class DirectoryContents<T : Any>(
             "Path is not a directory: $rootPath"
         }
 
-        val byKey = HashMap<ContentKey<T>, T>()
+        val byKey = HashMap<Key, KeyedValue<T>>()
         for (file in rootPath.walk().filter { it.isContentFile() }) {
             val key = file.asContentKey(rootPath)
             val value = file.deserialized()
 
-            require(byKey.putIfAbsent(key, value) == null) {
+            require(byKey.putIfAbsent(key.key(), KeyedValue.keyedValue(key, value)) == null) {
                 "Duplicate content key detected: $key"
             }
         }
@@ -288,21 +347,25 @@ open class DirectoryContents<T : Any>(
         cacheData.store(CacheData(byKey))
     }
 
-    override fun byKey(key: ContentKey<T>): T? {
-        return requireLoaded().byKey[key]
+    override fun <R : T> byKey(key: ContentKey<R>): R? {
+        return requireLoaded().byKey[key.key()]?.valueAs(key)
     }
 
-    override fun contents(): Collection<T> {
-        return requireLoaded().byKey.values.toList()
+    override fun values(): Collection<T> {
+        return requireLoaded().byKey.values.map(KeyedValue<T>::value)
     }
 
-    override fun contentKeys(): Set<ContentKey<T>> {
-        return requireLoaded().byKey.keys
+    override fun keySet(): Set<ContentKey<T>> {
+        @Suppress("UNCHECKED_CAST")
+        return requireLoaded().byKey.values.mapTo(LinkedHashSet()) { it.key() as ContentKey<T> }
     }
 
     override fun iterator(): Iterator<ContentHolder<T>> {
-        return requireLoaded().byKey.keys
-            .map { key -> ContentHolder(key, this) }
+        return requireLoaded().byKey.values
+            .map { entry ->
+                @Suppress("UNCHECKED_CAST")
+                ContentHolder(entry.key() as ContentKey<T>, this)
+            }
             .iterator()
     }
 
@@ -340,7 +403,7 @@ open class DirectoryContents<T : Any>(
             }
         }
 
-        return contentKeyOf(namespace, value)
+        return contentKeyOf(Key.key(namespace, value), contentType)
     }
 
     private fun Path.deserialized(): T {
@@ -350,5 +413,5 @@ open class DirectoryContents<T : Any>(
         return stringFormat.decodeFromString(kSerializer.value, text)
     }
 
-    private data class CacheData<T : Any>(val byKey: Map<ContentKey<T>, T>)
+    private data class CacheData<T : Any>(val byKey: Map<Key, KeyedValue<T>>)
 }

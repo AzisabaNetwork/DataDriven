@@ -11,7 +11,6 @@ import io.papermc.paper.command.brigadier.argument.CustomArgumentType
 import net.azisaba.data.content.ContentHolder
 import net.azisaba.data.content.ContentKey
 import net.azisaba.data.content.Contents
-import net.azisaba.data.content.contentKeyOf
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -36,10 +35,8 @@ private class ContentHolderArgumentTypeImpl<T : Any>(
     override fun getNativeType(): ArgumentType<Key> = ArgumentTypes.key()
 
     override fun convert(nativeType: Key): ContentHolder<T> {
-        val key = contentKeyOf<T>(nativeType)
-        if (key !in contents) {
-            throw ERROR_NOT_FOUND.create(key.asString())
-        }
+        val key = contents.keySet().find { it.asString() == nativeType.asString() }
+            ?: throw ERROR_NOT_FOUND.create(nativeType.asString())
         return ContentHolder(key, contents)
     }
 
@@ -48,7 +45,7 @@ private class ContentHolderArgumentTypeImpl<T : Any>(
         builder: SuggestionsBuilder,
     ): CompletableFuture<Suggestions> {
         val remaining = builder.remainingLowerCase
-        contents.contentKeys()
+        contents.keySet()
             .asSequence()
             .filter { key ->
                 key.asString().lowercase().startsWith(remaining) ||
