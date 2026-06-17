@@ -6,6 +6,7 @@ import com.mojang.brigadier.tree.LiteralCommandNode
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.command.brigadier.MessageComponentSerializer
+import net.azisaba.data.Holder
 import net.azisaba.data.content.DirectoryContents
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -26,16 +27,16 @@ private val ERROR_FAILED_TO_RELOAD: DynamicCommandExceptionType = DynamicCommand
  * Creates a command node that reloads this directory-backed contents from the given root path.
  *
  * @param literal the literal name of this command node.
- * @param rootPath the root path used to bootstrap this contents.
+ * @param rootPath the root path holder used to bootstrap this contents.
  * @return the created command node.
  */
 fun <T : Any> DirectoryContents<T>.buildReloadCommandNode(
     literal: String,
-    rootPath: Path,
+    rootPath: Holder<Path>,
 ): LiteralCommandNode<CommandSourceStack> {
     return Commands.literal(literal)
         .executes { context ->
-            tryReload(this, rootPath, context.source.sender)
+            tryReload(this, rootPath.get(), context.source.sender)
             Command.SINGLE_SUCCESS
         }
         .build()
