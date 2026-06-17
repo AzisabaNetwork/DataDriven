@@ -531,14 +531,14 @@ open class DirectoryContents<T : Any>(
     private val kType: KType,
     private val kSerializer: Lazy<KSerializer<T>>,
     private val stringFormat: StringFormat,
-    vararg extensions: String,
+    extensions: Set<String>,
 ) : IndexContents<T>() {
     constructor(
         kClass: KClass<T>,
         kSerializer: Lazy<KSerializer<T>>,
         stringFormat: StringFormat,
-        vararg extensions: String,
-    ) : this(kClass.createType(), kSerializer, stringFormat, *extensions)
+        extensions: Set<String>,
+    ) : this(kClass.createType(), kSerializer, stringFormat, extensions)
 
     final override val index: Contents.Index<T>
         get() = requireLoaded()
