@@ -6,7 +6,6 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.Keyed
 import net.kyori.examination.Examinable
 import net.kyori.examination.ExaminableProperty
-import org.jetbrains.annotations.ApiStatus
 import java.nio.file.Path
 import java.util.*
 import java.util.stream.Stream
@@ -37,7 +36,6 @@ import kotlin.reflect.full.isSubtypeOf
  * @see EnumContents
  * @see DirectoryContents
  */
-@ApiStatus.Experimental
 interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
     /** The number of contents in this collection. */
     val size: Int
@@ -402,7 +400,6 @@ interface Contents<T : Any> : Iterable<ContentHolder<T>>, Examinable {
  * @param T the stored value type
  * @see Contents.Index
  */
-@ApiStatus.Experimental
 abstract class IndexContents<T : Any> : Contents<T> {
     override val size: Int
         get() = index.size
@@ -446,7 +443,6 @@ abstract class IndexContents<T : Any> : Contents<T> {
  *
  * @param T the stored value type
  */
-@ApiStatus.Experimental
 @OptIn(ExperimentalAtomicApi::class)
 open class MutableContents<T : Any> : IndexContents<T>() {
     override val index: Contents.Index<T>
@@ -500,7 +496,6 @@ open class MutableContents<T : Any> : IndexContents<T>() {
  * @param kClass the enum class whose constants become content values
  * @throws IllegalArgumentException if multiple constants use the same key
  */
-@ApiStatus.Experimental
 open class EnumContents<T>(kClass: KClass<T>) : IndexContents<T>() where T : Enum<T>, T : Keyed {
     override val index: Contents.Index<T> = Contents.Index.from(
         kClass.java.enumConstants.associateBy { enumConstant ->
@@ -525,7 +520,6 @@ open class EnumContents<T>(kClass: KClass<T>) : IndexContents<T>() where T : Enu
  * @param stringFormat the format used to decode each content file
  * @param extensions the accepted file extensions without leading dots
  */
-@ApiStatus.Experimental
 @OptIn(ExperimentalAtomicApi::class)
 open class DirectoryContents<T : Any>(
     private val kType: KType,
