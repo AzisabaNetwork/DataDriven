@@ -37,7 +37,7 @@ fun <T : Any> Collection<Weighted<T>>.randomWeighted(random: Random = Random.Def
 }
 
 /**
- * Creates a weighted list from this collection using the [selector] from each element.
+ * Creates a weighted list from this itarable using the [selector] from each element.
  *
  * For example, an element whole selected weight is `10` is representing as a [Weighted] value with
  * weight `10`.
@@ -46,7 +46,7 @@ fun <T : Any> Collection<Weighted<T>>.randomWeighted(random: Random = Random.Def
  * @param selector the selector used to provide the weight for each element
  * @return a list of weighted values
  */
-fun <T : Any> Collection<T>.weightedBy(selector: (T) -> Int): List<Weighted<T>> {
+fun <T : Any> Iterable<T>.weightedBy(selector: (T) -> Int): List<Weighted<T>> {
     return map { Weighted(it, selector(it)) }
 }
 
